@@ -47,13 +47,15 @@ def find_closest_string_distance(*,
                                  in_string,
                                  verbose: bool,
                                  debug: bool,):
+    key_distances = {}
     distance = -1
     if verbose:
         ic(len(string_dict))
     for key, string in string_dict.items():
         dist = StringMatcher.distance(in_string, string)
         if verbose:
-            ic(key, dist)
+            ic(dist, key)
+        key_distances[key] = distance
         if distance < 0:
             distance = dist
             winning_key = key
@@ -61,7 +63,10 @@ def find_closest_string_distance(*,
             if dist < distance:
                 distance = dist
                 winning_string = string
+
     if verbose:
+        for key in key_distances.keys():
+            ic(key_distances[key])
         eprint("Converting {0} to {1}".format(in_string, winning_key))
 
     return winning_key
