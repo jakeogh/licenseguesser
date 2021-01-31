@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
-from icecream import ic
-
 # pylint: disable=C0111  # docstrings are always outdated and wrong
 # pylint: disable=W0511  # todo is encouraged
 # pylint: disable=C0301  # line too long
@@ -27,7 +25,6 @@ from pathlib import Path
 import click
 from enumerate_input import enumerate_input
 from getdents import files
-#from collections import defaultdict
 from kcl.configops import click_read_config
 from kcl.configops import click_write_config_entry
 from python_Levenshtein import StringMatcher
@@ -52,7 +49,7 @@ def find_closest_string_distance(*,
                                  debug: bool,):
     distance = -1
     if verbose:
-        ic(len(string_list))
+        ic(len(string_dict))
     for key, string in string_dict:
         dist = StringMatcher.distance(in_string, string)
         ic(string, dist)
@@ -97,7 +94,14 @@ def build_license_dict(path, *,
 
 
 @click.command()
-@click.argument("license_corpus", type=str, nargs=-1)
+@click.argument("license_corpus",
+                type=click.Path(exists=True,
+                                dir_okay=True,
+                                file_okay=False,
+                                path_type=str,
+                                allow_dash=False),
+                nargs=1,
+                required=True)
 @click.argument("license_files",
                 type=click.Path(exists=True,
                                 dir_okay=False,
@@ -140,7 +144,6 @@ def cli(ctx,
     ctx.obj['end'] = end
     ctx.obj['null'] = null
     ctx.obj['progress'] = progress
-
 
     license_dict = build_license_dict(path=license_corpus,
                                       verbose=verbose,
