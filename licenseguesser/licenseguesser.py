@@ -19,7 +19,6 @@ from icecream import ic
 # pylint: disable=E1101  # no member for base
 # pylint: disable=W0201  # attribute defined outside __init__
 # pylint: disable=R0916  # Too many boolean expressions in if statement
-
 import os
 import re
 import sys
@@ -27,17 +26,12 @@ from pathlib import Path
 
 import click
 from enumerate_input import enumerate_input
-#from kcl.pathops import path_is_block_special
 from getdents import files
 #from collections import defaultdict
-#from prettyprinter import cpprint, install_extras
-#install_extras(['attrs'])
 from kcl.configops import click_read_config
 from kcl.configops import click_write_config_entry
+from python_Levenshtein import StringMatcher
 
-# click-command-tree
-#from click_plugins import with_plugins
-#from pkg_resources import iter_entry_points
 
 def eprint(*args, **kwargs):
     if 'file' in kwargs.keys():
@@ -52,19 +46,19 @@ except ImportError:
 
 
 def find_closest_string_distance(*,
-                                 string_list,
+                                 string_dict,
                                  in_string,
                                  verbose: bool,
                                  debug: bool,):
     distance = -1
     if verbose:
-        ic(string_list)
-    for string in string_list:
+        ic(len(string_list))
+    for key, string in string_dict:
         dist = StringMatcher.distance(in_string, string)
         ic(string, dist)
         if distance < 0:
             distance = dist
-            winning_string = string
+            winning_string = string_dict[key]
         else:
             if dist < distance:
                 distance = dist
@@ -72,7 +66,7 @@ def find_closest_string_distance(*,
     if verbose:
         eprint("Converting {0} to {1}".format(in_string, winning_string))
 
-    return [winning_string]
+    return winning_string
 
 
 def linearize_text(text, *,
@@ -156,6 +150,9 @@ def cli(ctx,
 
     for index, path in enumerate_input(iterator=iterator,
                                        null=null,
+                                       skip=None,
+                                       head=None,
+                                       tail=None,
                                        progress=progress,
                                        debug=debug,
                                        verbose=verbose,):
@@ -167,8 +164,13 @@ def cli(ctx,
         with open(path, 'r') as fh:
             path_data = fh.read()
 
-        linear_license = linarize_text(text=path_data,
-                                       verbose=verbose,
-                                       debug=debug,)
+        linear_license = linearize_text(text=path_data,
+                                        verbose=verbose,
+                                        debug=debug,)
 
+        closest_guess = find_closest_string_distance(string_dict=license_dict,
+                                                     in_string=linear_license,
+                                                     verbose=verbose,
+                                                     debug=debug,)
+        ic(closest_guess)
 
