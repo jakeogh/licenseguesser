@@ -52,18 +52,19 @@ def find_closest_string_distance(*,
         ic(len(string_dict))
     for key, string in string_dict.items():
         dist = StringMatcher.distance(in_string, string)
-        ic(string, dist)
+        if verbose:
+            ic(key, dist)
         if distance < 0:
             distance = dist
-            winning_string = string_dict[key]
+            winning_key = key
         else:
             if dist < distance:
                 distance = dist
                 winning_string = string
     if verbose:
-        eprint("Converting {0} to {1}".format(in_string, winning_string))
+        eprint("Converting {0} to {1}".format(in_string, winning_key))
 
-    return winning_string
+    return winning_key
 
 
 def linearize_text(text, *,
