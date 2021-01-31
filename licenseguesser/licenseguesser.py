@@ -27,7 +27,7 @@ from enumerate_input import enumerate_input
 from getdents import files
 from kcl.configops import click_read_config
 from kcl.configops import click_write_config_entry
-from python_Levenshtein import StringMatcher
+from Levenshtein import StringMatcher
 
 
 def eprint(*args, **kwargs):
