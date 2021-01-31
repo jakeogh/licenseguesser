@@ -20,13 +20,12 @@
 import os
 import re
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 import click
 from enumerate_input import enumerate_input
 from getdents import files
-from kcl.configops import click_read_config
-from kcl.configops import click_write_config_entry
 from Levenshtein import StringMatcher
 
 
@@ -47,7 +46,8 @@ def find_closest_string_distance(*,
                                  in_string,
                                  verbose: bool,
                                  debug: bool,):
-    key_distances = {}
+
+    distances = defaultdict(list)
     distance = -1
     if verbose:
         ic(len(string_dict))
@@ -55,7 +55,7 @@ def find_closest_string_distance(*,
         dist = StringMatcher.distance(in_string, string)
         if verbose:
             ic(dist, key)
-        key_distances[key] = dist
+        distances[dist].append(key)
         if distance < 0:
             distance = dist
             winning_key = key
@@ -65,9 +65,13 @@ def find_closest_string_distance(*,
                 winning_string = string
 
     if verbose:
-        for key in key_distances.keys():
-            ic(key_distances[key], key)
-        eprint("Converting {0} to {1}".format(in_string, winning_key))
+        for key in distances.keys():
+            ic(key)
+            for match in distances[key]:
+                ic(match)
+        ic(in_string)
+        ic(winning_string)
+        ic(winning_key)
 
     return winning_key
 
