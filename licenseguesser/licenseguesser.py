@@ -75,10 +75,10 @@ def find_closest_string_distance(*,
 def linearize_text(text, *,
                    verbose: bool,
                    debug: bool,):
-    if verbose:
+    if debug:
         ic(len(text))
     text = re.sub(r'[\W]+', ' ', text).strip().lower()
-    if verbose:
+    if debug:
         ic(len(text))
     return text
 
