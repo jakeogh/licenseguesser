@@ -121,7 +121,6 @@ def cli(ctx,
         license_files,
         verbose,
         debug,
-        simulate,
         ipython,
         progress,
         printn,):
