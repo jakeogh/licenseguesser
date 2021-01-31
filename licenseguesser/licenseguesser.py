@@ -50,7 +50,7 @@ def find_closest_string_distance(*,
     distance = -1
     if verbose:
         ic(len(string_dict))
-    for key, string in string_dict:
+    for key, string in string_dict.items():
         dist = StringMatcher.distance(in_string, string)
         ic(string, dist)
         if distance < 0:
