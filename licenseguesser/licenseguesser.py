@@ -79,6 +79,10 @@ def find_closest_string_distance(*,
 def linearize_text(text, *,
                    verbose: bool,
                    debug: bool,):
+    text = text.splitlines()
+    if 'copyright' in text[0].lower():
+        text = text[1:]
+    text = ' '.join(text)
     if debug:
         ic(len(text))
     text = re.sub(r'[\W]+', ' ', text).strip().lower()
