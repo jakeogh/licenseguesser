@@ -70,10 +70,10 @@ def find_closest_string_distance(*,
             for path in distances_to_paths[path_distance]:
                 ic(path)
 
-        print("", file=sys.stderr)
-        ic('\n', in_string)
+        print("\n", file=sys.stderr)
+        eprint('\n', in_string)
         ic(winning_key)
-        ic('\n', string_dict[winning_key])
+        eprint('\n', string_dict[winning_key])
         ic(distance, winning_key)
         winning_distances = sorted(distances_to_paths.keys())[:10]
         for distance in winning_distances:
