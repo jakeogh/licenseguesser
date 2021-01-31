@@ -69,9 +69,14 @@ def find_closest_string_distance(*,
             ic(key)
             for match in distances[key]:
                 ic(match)
+
+        print("", file=sys.stderr)
         ic(in_string)
         ic(winning_string)
         ic(winning_key)
+        winning_distances = sorted(distances.keys())[0:10]
+        for distance in winning_distances:
+            ic(distance, distances[distance])
 
     return winning_key
 
