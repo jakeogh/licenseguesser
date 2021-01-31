@@ -47,36 +47,37 @@ def find_closest_string_distance(*,
                                  verbose: bool,
                                  debug: bool,):
 
-    distances = defaultdict(list)
+    distances_to_paths = defaultdict(list)
     distance = -1
     if verbose:
         ic(len(string_dict))
-    for key, string in string_dict.items():
+    for path_key, string in string_dict.items():
         dist = StringMatcher.distance(in_string, string)
         if verbose:
-            ic(dist, key)
-        distances[dist].append(key)
+            ic(dist, path_key)
+        distances_to_paths[dist].append(path_key)
         if distance < 0:
             distance = dist
-            winning_key = key
+            winning_key = path_key
         else:
             if dist < distance:
                 distance = dist
-                winning_string = string
+                winning_key = path_key
 
     if verbose:
-        for key in distances.keys():
-            ic(key)
-            for match in distances[key]:
-                ic(match)
+        for path_distance in distances_to_paths.keys():
+            ic(path_distance)
+            for path in distances_to_paths[path_distance]:
+                ic(path)
 
         print("", file=sys.stderr)
         ic(in_string)
-        ic(winning_string)
         ic(winning_key)
-        winning_distances = sorted(distances.keys())[0:10]
+        ic(string_dict[winning_key])
+        ic(distance, winning_key)
+        winning_distances = sorted(distances_to_paths.keys())[:10]
         for distance in winning_distances:
-            ic(distance, distances[distance])
+            ic(distance, distances_to_paths[distance])
 
     return winning_key
 
