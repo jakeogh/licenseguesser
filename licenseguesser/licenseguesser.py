@@ -182,10 +182,10 @@ def cli(ctx,
     ctx.obj['progress'] = progress
 
     if list_licenses:
-        license_list = build_license_dict(path=license_corpus,
+        license_list = build_license_list(path=license_corpus,
                                           verbose=verbose,
                                           debug=debug,)
-        for license in license_list.keys():
+        for license in license_list:
             print(license)
         return
 
