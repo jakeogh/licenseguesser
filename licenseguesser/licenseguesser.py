@@ -113,6 +113,20 @@ def build_license_dict(path, *,
     return license_dict
 
 
+def build_license_list(path='/var/db/repos/gentoo/licenses', *,
+                       verbose: bool,
+                       debug: bool,):
+    license_list = []
+
+    for license_path in files(path, verbose=verbose, debug=debug):
+        license_path = Path(license_path)
+        if verbose:
+            ic(license_path)
+        license_list.append(license_path.name)
+
+    return license_list
+
+
 @click.command()
 @click.argument("license_corpus",
                 type=click.Path(exists=True,
@@ -121,7 +135,8 @@ def build_license_dict(path, *,
                                 path_type=str,
                                 allow_dash=False),
                 nargs=1,
-                required=True)
+                required=True,
+                default='/var/db/repos/gentoo/licenses',)
 @click.argument("license_files",
                 type=click.Path(exists=True,
                                 dir_okay=False,
@@ -133,6 +148,7 @@ def build_license_dict(path, *,
 @click.option('--verbose', is_flag=True)
 @click.option('--debug', is_flag=True)
 @click.option('--ipython', is_flag=True)
+@click.option('--list', 'list_licenses', is_flag=True)
 @click.option("--printn", is_flag=True)
 @click.option("--progress", is_flag=True)
 @click.pass_context
@@ -141,6 +157,7 @@ def cli(ctx,
         license_files,
         verbose,
         debug,
+        list_licenses,
         ipython,
         progress,
         printn,):
@@ -164,9 +181,18 @@ def cli(ctx,
     ctx.obj['null'] = null
     ctx.obj['progress'] = progress
 
+    if list_licenses:
+        license_list = build_license_dict(path=license_corpus,
+                                          verbose=verbose,
+                                          debug=debug,)
+        for license in license_list.keys():
+            print(license)
+        return
+
     license_dict = build_license_dict(path=license_corpus,
                                       verbose=verbose,
                                       debug=debug,)
+
 
     iterator = license_files
 
