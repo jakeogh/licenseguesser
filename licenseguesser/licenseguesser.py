@@ -124,7 +124,7 @@ def build_license_list(path='/var/db/repos/gentoo/licenses', *,
             ic(license_path)
         license_list.append(license_path.name)
 
-    return license_list
+    return sorted(license_list)
 
 
 @click.command()
