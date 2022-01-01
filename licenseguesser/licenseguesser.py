@@ -17,35 +17,29 @@
 # pylint: disable=E1101  # no member for base
 # pylint: disable=W0201  # attribute defined outside __init__
 # pylint: disable=R0916  # Too many boolean expressions in if statement
-import os
+
 import re
 import sys
 from collections import defaultdict
+from math import inf
 from pathlib import Path
 
 import click
+from asserttool import eprint
+from asserttool import ic
+from asserttool import tv
+from clicktool import click_add_options
+from clicktool import click_global_options
 from enumerate_input import enumerate_input
 from getdents import files
 from Levenshtein import StringMatcher
-
-
-def eprint(*args, **kwargs):
-    if 'file' in kwargs.keys():
-        kwargs.pop('file')
-    print(*args, file=sys.stderr, **kwargs)
-
-
-try:
-    from icecream import ic  # https://github.com/gruns/icecream
-except ImportError:
-    ic = eprint
 
 
 def find_closest_string_distance(*,
                                  string_dict,
                                  in_string,
                                  verbose: bool,
-                                 debug: bool,):
+                                 ):
 
     distances_to_paths = defaultdict(list)
     distance = -1
@@ -84,41 +78,41 @@ def find_closest_string_distance(*,
 
 def linearize_text(text, *,
                    verbose: bool,
-                   debug: bool,):
+                   ):
     text = text.splitlines()
     if 'copyright' in text[0].lower():
         text = text[1:]
     text = ' '.join(text)
-    if debug:
+    if verbose == inf:
         ic(len(text))
     text = re.sub(r'[\W]+', ' ', text).strip().lower()
-    if debug:
+    if verbose == inf:
         ic(len(text))
     return text
 
 
 def build_license_dict(path, *,
                        verbose: bool,
-                       debug: bool,):
+                       ):
     license_dict = {}
 
-    for index, license_path in enumerate(files(path, verbose=verbose, debug=debug)):
+    for index, license_path in enumerate(files(path, verbose=verbose,)):
         license_path = Path(license_path)
         if verbose:
             ic(index, license_path)
         with open(license_path, 'r') as fh:
             path_data = fh.read()
-        linear_text = linearize_text(path_data, verbose=verbose, debug=debug)
+        linear_text = linearize_text(path_data, verbose=verbose,)
         license_dict[license_path] = linear_text
     return license_dict
 
 
 def build_license_list(path='/var/db/repos/gentoo/licenses', *,
                        verbose: bool,
-                       debug: bool,):
+                       ):
     license_list = []
 
-    for license_path in files(path, verbose=verbose, debug=debug):
+    for license_path in files(path, verbose=verbose,):
         license_path = Path(license_path)
         if verbose:
             ic(license_path)
@@ -132,7 +126,7 @@ def build_license_list(path='/var/db/repos/gentoo/licenses', *,
                 type=click.Path(exists=True,
                                 dir_okay=True,
                                 file_okay=False,
-                                path_type=str,
+                                path_type=Path,
                                 allow_dash=False),
                 nargs=1,
                 required=True,
@@ -141,70 +135,46 @@ def build_license_list(path='/var/db/repos/gentoo/licenses', *,
                 type=click.Path(exists=True,
                                 dir_okay=False,
                                 file_okay=True,
-                                path_type=str,
+                                path_type=Path,
                                 allow_dash=False),
                 nargs=-1,
-                required=False)
-@click.option('--verbose', is_flag=True)
-@click.option('--debug', is_flag=True)
+                required=False,)
 @click.option('--ipython', is_flag=True)
 @click.option('--list', 'list_licenses', is_flag=True)
-@click.option("--printn", is_flag=True)
-@click.option("--progress", is_flag=True)
+@click_add_options(click_global_options)
 @click.pass_context
 def cli(ctx,
-        license_corpus,
-        license_files,
-        verbose,
-        debug,
-        list_licenses,
-        ipython,
-        progress,
-        printn,):
+        license_corpus: Path,
+        license_files: Path,
+        verbose: int,
+        verbose_inf: bool,
+        list_licenses: bool,
+        ipython: bool,
+        ):
 
-    null = not printn
-    end = '\n'
-    if null:
-        end = '\x00'
-    if sys.stdout.isatty():
-        end = '\n'
-        assert not ipython
-
-    #progress = False
-    if (verbose or debug):
-        progress = False
-
-    ctx.ensure_object(dict)
-    ctx.obj['verbose'] = verbose
-    ctx.obj['debug'] = debug
-    ctx.obj['end'] = end
-    ctx.obj['null'] = null
-    ctx.obj['progress'] = progress
+    tty, verbose = tv(ctx=ctx,
+                      verbose=verbose,
+                      verbose_inf=verbose_inf,
+                      )
 
     if list_licenses:
         license_list = build_license_list(path=license_corpus,
                                           verbose=verbose,
-                                          debug=debug,)
+                                          )
         for license in license_list:
             print(license)
         return
 
     license_dict = build_license_dict(path=license_corpus,
                                       verbose=verbose,
-                                      debug=debug,)
+                                      )
 
 
     iterator = license_files
 
     for index, path in enumerate_input(iterator=iterator,
-                                       null=null,
-                                       skip=None,
-                                       head=None,
-                                       tail=None,
-                                       progress=progress,
-                                       debug=debug,
                                        verbose=verbose,):
-        path = Path(path)
+        path = Path(path).expanduser()
 
         if verbose:
             ic(index, path)
@@ -214,11 +184,11 @@ def cli(ctx,
 
         linear_license = linearize_text(text=path_data,
                                         verbose=verbose,
-                                        debug=debug,)
+                                        )
 
         closest_guess = find_closest_string_distance(string_dict=license_dict,
                                                      in_string=linear_license,
                                                      verbose=verbose,
-                                                     debug=debug,)
+                                                     )
         ic(closest_guess)
 
