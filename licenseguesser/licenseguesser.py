@@ -124,15 +124,15 @@ def build_license_list(path='/var/db/repos/gentoo/licenses', *,
 
 
 @click.command()
-@click.argument("license_corpus",
-                type=click.Path(exists=True,
-                                dir_okay=True,
-                                file_okay=False,
-                                path_type=Path,
-                                allow_dash=False),
-                nargs=1,
-                required=True,
-                default='/var/db/repos/gentoo/licenses',)
+#@click.argument("license_corpus",
+#                type=click.Path(exists=True,
+#                                dir_okay=True,
+#                                file_okay=False,
+#                                path_type=Path,
+#                                allow_dash=False),
+#                nargs=1,
+#                required=True,
+#                default='/var/db/repos/gentoo/licenses',)
 @click.argument("license_files",
                 type=click.Path(exists=True,
                                 dir_okay=False,
@@ -146,7 +146,6 @@ def build_license_list(path='/var/db/repos/gentoo/licenses', *,
 @click_add_options(click_global_options)
 @click.pass_context
 def cli(ctx,
-        license_corpus: Path,
         license_files: Path,
         verbose: Union[bool, int, float],
         verbose_inf: bool,
@@ -158,6 +157,8 @@ def cli(ctx,
                       verbose=verbose,
                       verbose_inf=verbose_inf,
                       )
+
+    license_corpus = Path('/var/db/repos/gentoo/licenses')
 
     if list_licenses:
         license_list = build_license_list(path=license_corpus,
