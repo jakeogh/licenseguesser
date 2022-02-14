@@ -18,11 +18,13 @@
 # pylint: disable=W0201  # attribute defined outside __init__
 # pylint: disable=R0916  # Too many boolean expressions in if statement
 
+import os
 import re
 import sys
 from collections import defaultdict
 from math import inf
 from pathlib import Path
+from typing import Union
 
 import click
 from asserttool import eprint
@@ -30,15 +32,15 @@ from asserttool import ic
 from asserttool import tv
 from clicktool import click_add_options
 from clicktool import click_global_options
-from enumerate_input import enumerate_input
 from getdents import files
 from Levenshtein import StringMatcher
+from unmp import unmp
 
 
 def find_closest_string_distance(*,
-                                 string_dict,
+                                 string_dict: dict,
                                  in_string,
-                                 verbose: bool,
+                                 verbose: Union[bool, int, float],
                                  ):
 
     distances_to_paths = defaultdict(list)
@@ -77,7 +79,7 @@ def find_closest_string_distance(*,
 
 
 def linearize_text(text, *,
-                   verbose: bool,
+                   verbose: Union[bool, int, float],
                    ):
     text = text.splitlines()
     if 'copyright' in text[0].lower():
@@ -92,7 +94,7 @@ def linearize_text(text, *,
 
 
 def build_license_dict(path, *,
-                       verbose: bool,
+                       verbose: Union[bool, int, float],
                        ):
     license_dict = {}
 
@@ -108,7 +110,7 @@ def build_license_dict(path, *,
 
 
 def build_license_list(path='/var/db/repos/gentoo/licenses', *,
-                       verbose: bool,
+                       verbose: Union[bool, int, float],
                        ):
     license_list = []
 
@@ -146,7 +148,7 @@ def build_license_list(path='/var/db/repos/gentoo/licenses', *,
 def cli(ctx,
         license_corpus: Path,
         license_files: Path,
-        verbose: int,
+        verbose: Union[bool, int, float],
         verbose_inf: bool,
         list_licenses: bool,
         ipython: bool,
@@ -169,17 +171,17 @@ def cli(ctx,
                                       verbose=verbose,
                                       )
 
+    if license_files:
+        iterator = license_files
+    else:
+        iterator = unmp(valid_types=[bytes], verbose=verbose)
 
-    iterator = license_files
-
-    for index, path in enumerate_input(iterator=iterator,
-                                       verbose=verbose,):
-        path = Path(path).expanduser()
-
+    for index, path in enumerate(iterator):
+        _path = Path(os.fsdecode(path)).expanduser()
         if verbose:
-            ic(index, path)
+            ic(index, _path)
 
-        with open(path, 'r') as fh:
+        with open(_path, 'r', encoding='utf8') as fh:
             path_data = fh.read()
 
         linear_license = linearize_text(text=path_data,
@@ -191,4 +193,3 @@ def cli(ctx,
                                                      verbose=verbose,
                                                      )
         ic(closest_guess)
-
