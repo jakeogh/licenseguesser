@@ -27,11 +27,11 @@ from pathlib import Path
 from typing import Union
 
 import click
-from asserttool import eprint
 from asserttool import ic
-from asserttool import tv
 from clicktool import click_add_options
 from clicktool import click_global_options
+from clicktool import tv
+from eprint import eprint
 from getdents import files
 from Levenshtein import StringMatcher
 from unmp import unmp
