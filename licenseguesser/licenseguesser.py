@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
-# pylint: disable=missing-docstring               # [C0111] docstrings are always outdated and wrong
-# pylint: disable=fixme                           # [W0511] todo is encouraged
-# pylint: disable=line-too-long                   # [C0301]
-# pylint: disable=too-many-instance-attributes    # [R0902]
-# pylint: disable=too-many-lines                  # [C0302] too many lines in module
 # pylint: disable=invalid-name                    # [C0103] single letter var names, name too descriptive
 # pylint: disable=too-many-return-statements      # [R0911]
 # pylint: disable=too-many-branches               # [R0912]
@@ -21,18 +16,16 @@ from __future__ import annotations
 
 import os
 import re
-import sys
 from collections import defaultdict
-from math import inf
 from pathlib import Path
 
 import click
 from asserttool import ic
 from clicktool import click_add_options
 from clicktool import click_global_options
-from clicktool import tv
-from eprint import eprint
-from getdents import files
+from clicktool import tvicgvd
+from getdents import files_pathlib
+from globalverbose import gvd
 from Levenshtein import StringMatcher
 from unmp import unmp
 
@@ -41,17 +34,13 @@ def find_closest_string_distance(
     *,
     string_dict: dict,
     in_string,
-    verbose: bool | int | float,
 ):
-
     distances_to_paths = defaultdict(list)
     distance = -1
-    if verbose:
-        ic(len(string_dict))
+    #ic(len(string_dict))
     for path_key, string in string_dict.items():
         dist = StringMatcher.distance(in_string, string)
-        if verbose:
-            ic(dist, path_key)
+        #ic(dist, path_key)
         distances_to_paths[dist].append(path_key)
         if distance < 0:
             distance = dist
@@ -61,81 +50,53 @@ def find_closest_string_distance(
                 distance = dist
                 winning_key = path_key
 
-    if verbose:
-        for path_distance in distances_to_paths.keys():
-            ic(path_distance)
-            for path in distances_to_paths[path_distance]:
-                ic(path)
+    #if verbose:
+    #    for path_distance in distances_to_paths.keys():
+    #        ic(path_distance)
+    #        for path in distances_to_paths[path_distance]:
+    #            ic(path)
 
-        print("\n", file=sys.stderr)
-        eprint("\n", in_string)
-        ic(winning_key)
-        eprint("\n", string_dict[winning_key])
-        ic(distance, winning_key)
-        winning_distances = sorted(distances_to_paths.keys())[:10]
-        for distance in winning_distances:
-            ic(distance, distances_to_paths[distance])
+    #    print("\n", file=sys.stderr)
+    #    eprint("\n", in_string)
+    #    ic(winning_key)
+    #    eprint("\n", string_dict[winning_key])
+    #    ic(distance, winning_key)
+    #    winning_distances = sorted(distances_to_paths.keys())[:10]
+    #    for distance in winning_distances:
+    #        ic(distance, distances_to_paths[distance])
 
     return winning_key
 
 
-def linearize_text(
-    text,
-    *,
-    verbose: bool | int | float,
-):
+def linearize_text(text):
     text = text.splitlines()
     if "copyright" in text[0].lower():
         text = text[1:]
     text = " ".join(text)
-    if verbose == inf:
-        ic(len(text))
+    #ic(len(text))
     text = re.sub(r"[\W]+", " ", text).strip().lower()
-    if verbose == inf:
-        ic(len(text))
+    #ic(len(text))
     return text
 
 
-def build_license_dict(
-    path,
-    *,
-    verbose: bool | int | float,
-):
+def build_license_dict(path):
     license_dict = {}
 
-    for index, license_path in enumerate(
-        files(
-            path,
-            verbose=verbose,
-        )
-    ):
-        license_path = Path(license_path)
-        if verbose:
-            ic(index, license_path)
+    for index, license_path in enumerate(files_pathlib(path)):
         with open(license_path, "r") as fh:
             path_data = fh.read()
         linear_text = linearize_text(
             path_data,
-            verbose=verbose,
         )
         license_dict[license_path] = linear_text
     return license_dict
 
 
-def build_license_list(
-    path="/var/db/repos/gentoo/licenses",
-    *,
-    verbose: bool | int | float,
-):
+def build_license_list(path="/var/db/repos/gentoo/licenses"):
     license_list = []
 
-    for license_path in files(
-        path,
-        verbose=verbose,
-    ):
-        license_path = Path(license_path)
-        if verbose:
-            ic(license_path)
+    for license_path in files_pathlib(path):
+        ic(license_path)
         license_list.append(license_path.name)
 
     return sorted(license_list)
@@ -165,16 +126,17 @@ def build_license_list(
 def cli(
     ctx,
     license_files: Path,
-    verbose: bool | int | float,
     verbose_inf: bool,
     dict_output: bool,
     list_licenses: bool,
+    verbose: bool = False,
 ):
-
-    tty, verbose = tv(
+    tty, verbose = tvicgvd(
         ctx=ctx,
         verbose=verbose,
         verbose_inf=verbose_inf,
+        ic=ic,
+        gvd=gvd,
     )
 
     license_corpus = Path("/var/db/repos/gentoo/licenses")
@@ -182,7 +144,6 @@ def cli(
     if list_licenses:
         license_list = build_license_list(
             path=license_corpus,
-            verbose=verbose,
         )
         for license in license_list:
             print(license)
@@ -190,30 +151,26 @@ def cli(
 
     license_dict = build_license_dict(
         path=license_corpus,
-        verbose=verbose,
     )
 
     if license_files:
         iterator = license_files
     else:
-        iterator = unmp(valid_types=[bytes], verbose=verbose)
+        iterator = unmp(valid_types=[bytes])
 
     for index, path in enumerate(iterator):
         _path = Path(os.fsdecode(path)).expanduser()
-        if verbose:
-            ic(index, _path)
+        #ic(index, _path)
 
         with open(_path, "r", encoding="utf8") as fh:
             path_data = fh.read()
 
         linear_license = linearize_text(
             text=path_data,
-            verbose=verbose,
         )
 
         closest_guess = find_closest_string_distance(
             string_dict=license_dict,
             in_string=linear_license,
-            verbose=verbose,
         )
         ic(closest_guess)
