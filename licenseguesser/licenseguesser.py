@@ -2,16 +2,6 @@
 # -*- coding: utf8 -*-
 
 # pylint: disable=invalid-name                    # [C0103] single letter var names, name too descriptive
-# pylint: disable=too-many-return-statements      # [R0911]
-# pylint: disable=too-many-branches               # [R0912]
-# pylint: disable=too-many-statements             # [R0915]
-# pylint: disable=too-many-arguments              # [R0913]
-# pylint: disable=too-many-nested-blocks          # [R1702]
-# pylint: disable=too-many-locals                 # [R0914]
-# pylint: disable=too-few-public-methods          # [R0903]
-# pylint: disable=no-member                       # [E1101] no member for base
-# pylint: disable=attribute-defined-outside-init  # [W0201]
-# pylint: disable=too-many-boolean-expressions    # [R0916] in if statement
 from __future__ import annotations
 
 import os
@@ -96,7 +86,7 @@ def build_license_list(path="/var/db/repos/gentoo/licenses"):
     license_list = []
 
     for license_path in files_pathlib(path):
-        ic(license_path)
+        #ic(license_path)
         license_list.append(license_path.name)
 
     return sorted(license_list)
